@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Kanban Board - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+            <li class="breadcrumb-item active">{{ project.name }}</li>
+        </ol>
+    </nav>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <i class="fas fa-plus me-2"></i>Add Task
+    </button>
+</div>
+
+<div class="row">
+    <!-- To Do -->
+    <div class="col-md-4">
+        <div class="bg-light p-3 rounded shadow-sm">
+            <h6 class="text-uppercase text-muted mb-3 d-flex justify-content-between">
+                To Do <span class="badge bg-secondary">{{ todo.count }}</span>
+            </h6>
+            {% for task in todo %}
+            {% include 'tasks/task_card.html' with task=task %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="col-md-4">
+        <div class="bg-light p-3 rounded shadow-sm">
+            <h6 class="text-uppercase text-muted mb-3 d-flex justify-content-between">
+                In Progress <span class="badge bg-primary">{{ in_progress.count }}</span>
+            </h6>
+            {% for task in in_progress %}
+            {% include 'tasks/task_card.html' with task=task %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Done -->
+    <div class="col-md-4">
+        <div class="bg-light p-3 rounded shadow-sm">
+            <h6 class="text-uppercase text-muted mb-3 d-flex justify-content-between">
+                Done <span class="badge bg-success">{{ done.count }}</span>
+            </h6>
+            {% for task in done %}
+            {% include 'tasks/task_card.html' with task=task %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'create_task' project.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" name="title" id="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assigned_to" class="form-label">Assign To</label>
+                        <select name="assigned_to" id="assigned_to" class="form-select">
+                            <option value="">Unassigned</option>
+                            {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

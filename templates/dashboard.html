@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+<div class="row">
+    <!-- Stats Cards -->
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-white text-primary p-3 me-3">
+                    <i class="fas fa-check fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Completed Tasks</h5>
+                    <h2 class="mb-0">{{ completed }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-white text-warning p-3 me-3">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Pending Tasks</h5>
+                    <h2 class="mb-0">{{ pending }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-white text-info p-3 me-3">
+                    <i class="fas fa-project-diagram fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Total Projects</h5>
+                    <h2 class="mb-0">{{ projects.count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white font-weight-bold">Task Status Distribution</div>
+            <div class="card-body">
+                <canvas id="taskChart" width="400" height="200" data-completed="{{ completed|default:0 }}"
+                    data-pending="{{ pending|default:0 }}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white font-weight-bold">Recent Tasks</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for task in recent_tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <h6 class="mb-0">{{ task.title }}</h6>
+                            <small class="text-muted">{{ task.project.name }}</small>
+                        </div>
+                        <span
+                            class="badge rounded-pill {% if task.status == 'DONE' %}bg-success{% elif task.status == 'IN_PROGRESS' %}bg-primary{% else %}bg-secondary{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-4">No tasks found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('taskChart');
+    const completedCount = parseInt(ctx.dataset.completed);
+    const pendingCount = parseInt(ctx.dataset.pending);
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Pending'],
+            datasets: [{
+                data: [completedCount, pendingCount],
+                backgroundColor: ['#198754', '#ffc107'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
